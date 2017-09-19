@@ -48,25 +48,27 @@ exports.update = function(req, res) {
   var listing = req.listing;
 
   /* Replace the article's properties with the new properties found in req.body */
-  /* save the coordinates (located in req.results if there is an address property) */
-  /* Save the article */
-  listing.name = req.body.name;               //pdates listings property with new one from req.body
+  listing.name = req.body.name;
   listing.code = req.body.code;
   listing.address = req.body.address;
-  if(req.results){                            //saves coordinates based on req.results
-    listing.coordinates={
-       latitude: req.results.lat,
-       longtitude: req.results.lng 
+
+  /* save the coordinates (located in req.results if there is an address property) */
+  if(req.results) {
+    listing.coordinates = {
+      latitude: req.results.lat, 
+      longitude: req.results.lng
     };
   }
-  listing.save(function(err) {              //save article throws err if err
+
+  /* Save the article */
+  listing.save(function(err) {
     if(err) {
       console.log(err);
       res.status(400).send(err);
     } else {
       res.json(listing);
     }
-  })
+  });
 };
 
 /* Delete a listing */
@@ -74,26 +76,25 @@ exports.delete = function(req, res) {
   var listing = req.listing;
 
   /* Remove the article */
-  Listing.findByIdAndRemove(listing._id, function(err) {
-    if (err){
-      console.log(err);
+  listing.remove(function(err) {
+    if(err) {
       res.status(400).send(err);
-    } else{
-    res.json(listing);
-    }       //prints to console if user deleted
-  });
+    }
+    else {
+      res.end();
+    }
+  })
 };
 
 /* Retreive all the directory listings, sorted alphabetically by listing code */
 exports.list = function(req, res) {
-  /* Your code here */
-Listing.find({}, null, {sort: {code: 1}}, function (err, listing) {     //sorts by listing code alphabetically
-    if (err){
-      console.log(err);
-    }else{
-    res.json(listing);
+  Listing.find().sort('code').exec(function(err, listings) {
+    if(err) {
+      res.status(400).send(err);
+    } else {
+      res.json(listings);
     }
-});
+  });
 };
 
 /* 
